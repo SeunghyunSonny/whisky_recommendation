@@ -7,7 +7,7 @@ import pandas as pd
 import io
 import time
 from image_search import ImageSearch
-from works_and_streamlit import LangChainWhiskey
+from whiskeylangchain import LangChainWhiskey
 from whiskeyocr_forread import text_recognizer
 import os
 import base64
