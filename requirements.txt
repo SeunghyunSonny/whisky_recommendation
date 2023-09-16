@@ -1,1 +1,7 @@
+transformers
+easyocr
+langchain
+openai
+streamlit_menu_option
+streamlit
 
