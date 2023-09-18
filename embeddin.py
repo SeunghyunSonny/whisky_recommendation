@@ -10,7 +10,7 @@ class Document:
 
 class DocEmbedding:
 
-    def __init__(self, txt_file_path=r'.\txt', openai_api_key="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", model_name="ada-002"):
+    def __init__(self, txt_file_path=r'C:\Users\Playdata\PycharmProjects\pythonProject3\texts\whiskey.txt', openai_api_key="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", model_name="ada-002"):
         self.openai_api_key = openai_api_key
         self.model_name = model_name
         self.documents = self.load_data_from_txt(txt_file_path)
@@ -24,9 +24,13 @@ class DocEmbedding:
             documents = [Document(line.strip()) for line in file.readlines()]
         return documents
 
-    def split_docs(self, chunk_size=500, chunk_overlap=40):
+    def split_docs(self, chunk_size=None, chunk_overlap=None):
+        # 기본값 설정
+        chunk_size = chunk_size or 500
+        chunk_overlap = chunk_overlap or 40
         text_splitter = RecursiveCharacterTextSplitter(chunk_size, chunk_overlap=chunk_overlap)
         return text_splitter.split_documents(self.documents)
+
 
     def create_chroma_from_docs(self):
         db = Chroma.from_documents(self.docs, self.embeddings)
