@@ -2,7 +2,8 @@ transformers
 easyocr
 langchain
 openai
-streamlit_menu_option
+streamlit-menu-option
 streamlit
 matplotlib
 sklearn
+selenium
