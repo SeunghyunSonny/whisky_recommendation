@@ -7,3 +7,6 @@ streamlit
 matplotlib
 sklearn
 selenium
+base64
+io
+time
