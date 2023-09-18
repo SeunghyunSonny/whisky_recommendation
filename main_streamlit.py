@@ -7,7 +7,6 @@ import pandas as pd
 # 추천시스템 유사도
 from Recommend.similarity import *
 
-
 import streamlit.components.v1 as html
 import io, os, time, base64, cv2
 
@@ -34,18 +33,18 @@ with st.sidebar:
 if choose == "컨텐츠":
 
     # 제목
-    image = Image.open("main_img_1.jpg")
+    image = Image.open("./image/main_img_1.jpg")
     st.image(image)
     
     
     # 이미지를 불러옵니다.
-    image2 = Image.open("main_img_2.jpg")
+    image2 = Image.open("./image/main_img_2.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image2)
 
     # 두 번째 이미지를 불러옵니다.
-    image3 = Image.open("main_img_3.jpg")
+    image3 = Image.open("./image/main_img_3.jpg")
 
     # 두 번째 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image3)
@@ -54,7 +53,7 @@ if choose == "컨텐츠":
     st.subheader("")
 
     # 세 번째 이미지를 불러옵니다.
-    image4 = Image.open("main_img_4.jpg")
+    image4 = Image.open("./image/main_img_4.jpg")
 
     # 세 번째 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image4)
@@ -63,7 +62,7 @@ if choose == "컨텐츠":
 if choose == "위스키 추천":
   
     # 이미지를 불러옵니다.
-    image5 = Image.open("main_img_5.jpg")
+    image5 = Image.open("./image/main_img_5.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image5)
@@ -98,12 +97,12 @@ if choose == "위스키 추천":
     st.subheader("")
 
     # 이미지를 불러옵니다.
-    image6 = Image.open("main_img_6.jpg")
+    image6 = Image.open("./image/main_img_6.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image6)
     
-    image7 = Image.open("main_img_7.jpg")
+    image7 = Image.open("./image/main_img_7.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image7)
@@ -266,7 +265,7 @@ if choose == "위스키 추천":
 
 if choose == "사진 찍기":
     # 이미지를 불러옵니다.
-    image8 = Image.open("서비스 준비 중.png")
+    image8 = Image.open("./image/서비스 준비 중.png")
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image8)
     
@@ -278,7 +277,7 @@ if choose == "도슨트":
     lcw = LangChainWhiskey(api_key_junseongs)
     
     # 이미지를 불러옵니다.
-    image9 = Image.open("./사진업로드 로고타입.jpg")
+    image9 = Image.open("./image/사진업로드 로고타입.jpg")
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image9)
     # 간격 조정
@@ -294,12 +293,10 @@ if choose == "도슨트":
     
     uploaded_file = st.file_uploader("로고 이미지 파일 업로드", type=["jpg", "png", "jpeg"])
     # 업로드한 파일이 있다면 이미지로 표시
-    st.write(type(uploaded_file))
     
     if uploaded_file is not None:
         pil_image = Image.open(uploaded_file)
         img = np.array(pil_image)
-        # img = cv2.imread(numpy_image)
         
         st.image(uploaded_file, caption="업로드한 이미지", use_column_width=True)
 
@@ -309,7 +306,6 @@ if choose == "도슨트":
     threshold_similarity = 60
 
     processor = WhiskeyLogoProcessor(df_path, trocr_model_name, threshold_similarity)
-    # upload_img = 'your_image_path_here'
     select_box = logo_type[selected_logo_type]  # 한줄 또는 두줄
 
     if select_box == '하나':
@@ -319,7 +315,6 @@ if choose == "도슨트":
 
     target_list = processor.result_list(str_text, length=5)
     extracted_text = st.selectbox('위스키를 선택해주세요: ', target_list)
-    st.write(type(extracted_text)) 
         
 
     # ImageSearch 객체 초기화
@@ -338,6 +333,7 @@ if choose == "도슨트":
 
         whiskey_info = lcw.get_info_and_description(whisky = user_prompt)
 
+        # 도슨트 출력 참고: whiskey_info는 whiskey_info와 docent_description를 키값으로 갖는 딕셔너리 형식, 영어로 출력
         st.write(f"'{extracted_text}' 위스키에 대한 설명입니다. \n {whiskey_info}")
         # st.write(f"Docent Description: {docent_description}")
 
