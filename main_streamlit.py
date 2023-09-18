@@ -2,8 +2,6 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 from PIL import Image
 
-from image_search import ImageSearch
-from whiskeylangchain import LangChainWhiskey
 from whiskeyocr_forread import text_recognizer
 from similarity import *
 
