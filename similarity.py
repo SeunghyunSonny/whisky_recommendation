@@ -3,8 +3,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 class WhiskeySimilarityChecker:
-    def __init__(self, file_path):
-        self.df = pd.read_excel(file_path)
+    def __init__(self, csv_file_path):
+        self.df = pd.read_csv(csv_file_path, encoding = 'utf-8')
         self.cols = ['aroma', 'taste', 'finish']
 
     def preprocessing(self):
