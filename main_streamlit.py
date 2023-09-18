@@ -121,57 +121,101 @@ if choose == "Whiskey Docent":
     st.title("위스키 도슨트 서비스")
     st.write("이 페이지는 위스키 도슨트 정보를 제공하는 페이지입니다.")
 
+    # ImageSearch initialization
+    driver_path = r"C:\Users\Playdata\Desktop\chromedriver.exe"
+    searcher = ImageSearch(driver_path)
+    if choose == "Whiskey Docent":
+        if not extracted_text:
+            user_prompt = st.text_input("Enter the whiskey's full name:")
+            if st.button("Generate") and user_prompt:
+                searcher = ImageSearch(driver_path)
+            saved_path = searcher.search_and_save_query(user_prompt)
+
+            if saved_path:
+                st.image(saved_path, caption=f"Image for {user_prompt}", use_column_width=True)
+            else:
+                st.write("Failed to fetch and save the image.")
+
+            whiskey_info = lcw.get_whiskey_info(user_prompt)
+            docent_description = lcw.get_docent_description(user_prompt)
+
+            st.write(f"Whiskey Info: {whiskey_info}")
+            st.write(f"Docent Description: {docent_description}")
+        else:
+            user_prompt = extracted_text
+
+
+        # Here, use the `extracted_text` as input
+        whiskey_info = lcw.get_whiskey_info(extracted_text)
+        docent_description = lcw.get_docent_description(extracted_text)
+
+        st.write(f"Whiskey Info: {whiskey_info}")
+        st.write(f"Docent Description: {docent_description}")
+
+        saved_path = searcher.search_and_save_query(extracted_text)
+
+        if saved_path:
+            st.image(saved_path, caption=f"Image for {extracted_text}", use_column_width=True)
+        else:
+            st.write("Failed to fetch and save the image.")
+
+        whiskey_info = lcw.get_whiskey_info(extracted_text)
+        docent_description = lcw.get_docent_description(extracted_text)
+
+        st.write(f"Whiskey Info: {extracted_text}")
+        st.write(f"Docent Description: {extracted_text}")
+
+
+
+
+
 # "Take a Photo" 페이지
 if choose == "Take a Photo":
     st.title("Webcam Photo Capture in Streamlit")
+    st.subheader("사진을 찍어보세요")
 
     # User input for folder path
     folder_path = "./capturedimage"
 
     # HTML to create a video element and capture button
-    html_code = """
-        <div style="display: flex; justify-content: center;">
-            <video id="webcam" width="640" height="480" autoplay></video>
-            <button id="capture" style="margin-top: 10px;">Capture</button>
-        </div>
-        <canvas id="canvas" style="display:none;"></canvas>
-
-        <script>
-            const webcamElement = document.getElementById('webcam');
-            const canvasElement = document.getElementById('canvas');
-            const captureButton = document.getElementById('capture');
-
-            navigator.mediaDevices.getUserMedia({ 'video': true })
-            .then(stream => {
-                webcamElement.srcObject = stream;
-            });
-
-            captureButton.addEventListener('click', () => {
-                canvasElement.width = webcamElement.videoWidth;
-                canvasElement.height = webcamElement.videoHeight;
-                const context = canvasElement.getContext('2d');
-                context.drawImage(webcamElement, 0, 0);
-                let photo = canvasElement.toDataURL('image/jpeg');
-                document.getElementById('photo').value = photo;
-            });
-        </script>
-    """
+    html_code = webcam_capture.html_code
 
     # Embed the HTML in the Streamlit app
     st.markdown(html_code, unsafe_allow_html=True)
 
     # Capture the photo data
-    photo_data = st.text_area(label="Captured Photo (base64)", height=200, key="photo")
+    photo_data = st.text_area(label="캡처된 사진 (base64)", height=200, key="photo")
+    uploaded_image = st.file_uploader("이미지 업로드", type=['jpg', 'jpeg', 'png'])
+
+    # Create an instance of the TextRecognition class
+    text_recognizer = TextRecognition()
+
+    # Initialize extracted_text
+    extracted_text = ""
+
+    if uploaded_image is not None:
+        image = Image.open(uploaded_image)
+        st.image(image, caption='업로드된 이미지', use_column_width=True)
+
+        st.write("")
+        st.write("처리된 이미지")
+
+        opencv_image = np.array(image)
+
+        st.image(edges, channels="GRAY", use_column_width=True)
 
     if photo_data and folder_path:
         header, encoded = photo_data.split(",", 1)
         photo_bytes = base64.b64decode(encoded)
 
-        # Save the photo to the specified folder
+        # 지정된 폴더에 사진 저장
         file_path = os.path.join(folder_path, "captured_photo.jpg")
         with open(file_path, "wb") as f:
             f.write(photo_bytes)
 
-        st.success(f"Photo saved to: {file_path}")
+        st.success(f"사진이 저장되었습니다: {file_path}")
+
+        # Perform OCR on the captured image using the TextRecognition class
+        extracted_text = text_recognizer.read_and_generate_text(file_path)
 
     st.subheader("")
