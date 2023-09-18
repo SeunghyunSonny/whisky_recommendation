@@ -1,51 +1,51 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 from PIL import Image
-
-from whiskeyocr_forread import text_recognizer
-from similarity import *
-
 import numpy as np
 import pandas as pd
-import streamlit.components.v1 as html
-import io, os, time, base64
 
-from webcamera import WebcamCaptureHTML
-from whiskeyocr_forread import TextRecognition
+# 추천시스템 유사도
+from similarity import *
+
+
+import streamlit.components.v1 as html
+import io, os, time, base64, cv2
+
+# 도슨트
+from whiskylogoprocess import WhiskeyLogoProcessor
 from image_search import ImageSearch
 from whiskeylangchain import LangChainWhiskey
-from embeddin import DocEmbedding
 
 
 
 # 페이지 선택을 위한 버튼을 사이드바에 추가합니다.
 with st.sidebar:
-    choose = option_menu("Our Service", ["Contents", "Recommendation", "Docent", "Take a Photo"],
-                         icons=["emoji-kiss", "search-heart", "chat-left-text", "camera"],
+    choose = option_menu("나만의 위스키", ["컨텐츠", "위스키 추천", "사진 찍기", "도슨트"],
+                         icons=["emoji-kiss", "search-heart", "camera", "chat-left-text"],
                          menu_icon="menu-up", default_index=0,
                          styles={
-                             "container": {"padding": "5!important", "background-color": "#fafafa"},
+                             "container": {"padding": "5!important", "background-color": "#FAFAFA"},
                              "icon": {"color": "black", "font-size": "25px"},
                              "nav-link": {"font-size": "16px", "color": "black", "text-align": "left", "margin": "0px",
                                           "--hover-color": "#eee"},
-                             "nav-link-selected": {"background-color": "#02ab21"},
+                             "nav-link-selected": {"background-color": "#EDF6F9"},
                          })
 # "Welcome" 페이지
-if choose == "Contents":
+if choose == "컨텐츠":
 
     # 제목
-    image = Image.open("./image/main_img_1.jpg")
+    image = Image.open("main_img_1.jpg")
     st.image(image)
     
     
     # 이미지를 불러옵니다.
-    image2 = Image.open("./image/main_img_2.jpg")
+    image2 = Image.open("main_img_2.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image2)
 
     # 두 번째 이미지를 불러옵니다.
-    image3 = Image.open("./image/main_img_3.jpg")
+    image3 = Image.open("main_img_3.jpg")
 
     # 두 번째 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image3)
@@ -54,16 +54,16 @@ if choose == "Contents":
     st.subheader("")
 
     # 세 번째 이미지를 불러옵니다.
-    image4 = Image.open("./image/main_img_4.jpg")
+    image4 = Image.open("main_img_4.jpg")
 
     # 세 번째 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image4)
 
 # "Whiskey Recommend" 페이지
-if choose == "Recommendation":
+if choose == "위스키 추천":
   
     # 이미지를 불러옵니다.
-    image5 = Image.open("./image/main_img_5.jpg")
+    image5 = Image.open("main_img_5.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image5)
@@ -98,12 +98,12 @@ if choose == "Recommendation":
     st.subheader("")
 
     # 이미지를 불러옵니다.
-    image6 = Image.open("./image/main_img_6.jpg")
+    image6 = Image.open("main_img_6.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image6)
     
-    image7 = Image.open("./image/main_img_7.jpg")
+    image7 = Image.open("main_img_7.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
     st.image(image7)
@@ -264,88 +264,81 @@ if choose == "Recommendation":
         elif Result == False:
             st.write('### :blue[값을 채워주세요!]')
 
-
-
-if choose == "Docent":
-    api_key_junseongs = "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"
+if choose == "사진 찍기":
+    # 이미지를 불러옵니다.
+    image8 = Image.open("서비스 준비 중.png")
+    # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
+    st.image(image8)
+    
+    
+    
+    
+if choose == "도슨트":
+    api_key_junseongs = "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"
     lcw = LangChainWhiskey(api_key_junseongs)
     
     # 이미지를 불러옵니다.
-    image7 = Image.open("./image/사진업로드 로고타입.jpg")
+    image9 = Image.open("./사진업로드 로고타입.jpg")
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
-    st.image(image7)
+    st.image(image9)
     # 간격 조정
     st.subheader("")
-    logo_type = {"로고 타입을 선택해 주세요.",
-            "한 줄짜리 로고사진",
-            "두 줄짜리 로고사진"}
-    selected_logo_type = st.selectbox("**로고 타입 선택**", logo_type)
+    logo_type = {"로고 타입을 선택해 주세요.":None,
+            "한 줄짜리 로고사진": '하나',
+            "두 줄짜리 로고사진": '둘'}
+    
+    selected_logo_type = st.selectbox("**로고 타입 선택**", logo_type.keys())
     # 간격 조정
     st.subheader("")
     # 파일 업로드를 위한 컴포넌트
+    
     uploaded_file = st.file_uploader("로고 이미지 파일 업로드", type=["jpg", "png", "jpeg"])
     # 업로드한 파일이 있다면 이미지로 표시
+    st.write(type(uploaded_file))
+    
     if uploaded_file is not None:
-        st.image(uploaded_file, caption="업로드한 이미지", use_column_width=True)
+        pil_image = Image.open(uploaded_file)
+        img = np.array(pil_image)
+        # img = cv2.imread(numpy_image)
         
-    # 간격 조정
-    st.subheader("")
-    extracted_text = result_list(str_text, length = 5)
-    st.selectbox("위스키를 선택해주세요:", "extracted_text")
+        st.image(uploaded_file, caption="업로드한 이미지", use_column_width=True)
+
+    df_path = './data/whisky_preprocessing.csv'
+    
+    trocr_model_name = "microsoft/trocr-large-handwritten"
+    threshold_similarity = 60
+
+    processor = WhiskeyLogoProcessor(df_path, trocr_model_name, threshold_similarity)
+    # upload_img = 'your_image_path_here'
+    select_box = logo_type[selected_logo_type]  # 한줄 또는 두줄
+
+    if select_box == '하나':
+        str_text = processor.line_process(img)
+    elif select_box == '둘':
+        str_text = processor.lines_process(img)
+
+    target_list = processor.result_list(str_text, length=5)
+    extracted_text = st.selectbox('위스키를 선택해주세요: ', target_list)
+    st.write(type(extracted_text)) 
+        
 
     # ImageSearch 객체 초기화
-    driver_path = r"C:\Users\Playdata\Desktop\chromedriver.exe"
-    searcher = ImageSearch(driver_path)
-
-    user_prompt = st.text_input("Enter the whiskey's full name:")
-
-    if st.button("Generate") and user_prompt:
-        saved_path = searcher.search_and_save_query(user_prompt)
-
-        if saved_path:
-            st.image(saved_path, caption=f"Image for {user_prompt}", use_column_width=True)
-        else:
-            st.write("Failed to fetch and save the image.")
-
-        whiskey_info = lcw.get_whiskey_info(user_prompt)
-        docent_description = lcw.get_docent_description(user_prompt)
-
-        st.write(f"Whiskey Info: {whiskey_info}")
-        st.write(f"Docent Description: {docent_description}")
-
-
-
-    
-    
-
-    
-    st.title("위스키 도슨트 서비스")
-    st.write("이 페이지는 위스키 도슨트 정보를 제공하는 페이지입니다.")
-
-    # ImageSearch initialization
     driver_path = r"./chromedriver.exe"
     searcher = ImageSearch(driver_path)
 
-    
     user_prompt = extracted_text
+    st.write(user_prompt)
+    if st.button("Generate") and user_prompt:
+        saved_path = searcher.search_and_save_query(user_prompt)
+
+        if os.path.exists(saved_path):
+            st.image(saved_path, caption=f"Image for {user_prompt}", width=200)
+        else:
+            st.write("Failed to fetch and save the image.")
+
+        whiskey_info = lcw.get_info_and_description(whisky = user_prompt)
+
+        st.write(f"'{extracted_text}' 위스키에 대한 설명입니다. \n {whiskey_info}")
+        # st.write(f"Docent Description: {docent_description}")
 
 
-    # Here, use the `extracted_text` as input
-    whiskey_info = lcw.get_whiskey_info(extracted_text)
-    docent_description = lcw.get_docent_description(extracted_text)
-
-    st.write(f"Whiskey Info: {whiskey_info}")
-    st.write(f"Docent Description: {docent_description}")
-
-    saved_path = searcher.search_and_save_query(extracted_text)
-
-    if saved_path:
-        st.image(saved_path, caption=f"Image for {extracted_text}", use_column_width=True)
-    else:
-        st.write("Failed to fetch and save the image.")
-
-    whiskey_info = lcw.get_whiskey_info(extracted_text)
-    docent_description = lcw.get_docent_description(extracted_text)
-
-    st.write(f"Whiskey Info: {extracted_text}")
-    st.write(f"Docent Description: {extracted_text}")
