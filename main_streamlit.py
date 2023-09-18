@@ -1,16 +1,18 @@
 import streamlit as st
+
 from streamlit_option_menu import option_menu
-import streamlit.components.v1 as html
 from PIL import Image
-import numpy as np
-import pandas as pd
-import io
-import time
+
 from image_search import ImageSearch
 from whiskeylangchain import LangChainWhiskey
 from whiskeyocr_forread import text_recognizer
-import os
-import base64
+from similarity import *
+
+import numpy as np
+import pandas as pd
+import streamlit.components.v1 as html
+import io, os, time, base64
+
 
 api_key_junseongs = "please put the api key"
 lcw = LangChainWhiskey(api_key_junseongs)
@@ -83,139 +85,246 @@ if choose == "Welcome":
 if choose == "Whiskey Recommend":
     st.title("위스키 추천 서비스")
     st.subheader("원하는 위스키를 만나보세요")
+    
+    
+    types = {'whiskey type을 선택해주세요': None,
+            '싱글 몰트 위스키': '싱글몰트', 
+            '블렌디드 위스키' : '블렌디드', 
+            '블렌디드 몰트 위스키' : '블렌디드 몰트',
+            '버번 & 라이 위스키' : '버번/라이'}
+    selected_type = st.selectbox("whiskey type 선택", types.keys())
+    
 
-    type = ['whiskey type을 선택해주세요', 'Single Malt whiskey', 'Blended whiskey', 'Blended Malt whiskey',
-            'Bourbon & Rye whiskey']
-    selected_type = st.selectbox("whiskey type 선택", type)
-
-    if selected_type != type[0]:
-        if selected_type == type[1]:
-            st.write(
-                "싱글 몰트 위스키는 하나의 곡물(보리)로 만들어진 것으로, 한 개의 증류기(distillery)에서 생산된 것을 의미합니다.\n이것은 특정 증류소의 고유한 스타일과 특징을 나타내며, 일반적으로 순수한 풍미와 독특한 향을 가지고 있습니다.")
-        elif selected_type == type[2]:
+    if selected_type != 'whiskey type을 선택해주세요':
+        if selected_type == '싱글 몰트 위스키':
+            st.write("싱글 몰트 위스키는 하나의 곡물(보리)로 만들어진 것으로, 한 개의 증류기(distillery)에서 생산된 것을 의미합니다.\n이것은 특정 증류소의 고유한 스타일과 특징을 나타내며, 일반적으로 순수한 풍미와 독특한 향을 가지고 있습니다.")
+            # user_type = ['싱글몰트']
+        elif selected_type == '블렌디드 위스키':
             st.write("블렌디드 위스키는 여러 가지 원료를 혼합하여 만들어지는 것으로, 보통 싱글 몰트 위스키와 그레인 위스키를 섞어 만듭니다.")
-        elif selected_type == type[3]:
+            # user_type = ['블렌디드']
+        elif selected_type == '블렌디드 몰트 위스키':
             st.write("블렌디드 몰트 위스키는 싱글 몰트 위스키만을 혼합하여 만들어집니다. 다른 곡물(예: 보리)을 사용하지 않고 순수한 싱글 몰트 위스키를 섞어 만듭니다.")
-        elif selected_type == type[4]:
-            st.write(
-                "버번 위스키는 옥수수로 만들어지며, 단맛과 부드러움이 특징입니다. 켄터키 버번은 가장 유명한 스타일 중 하나입니다.\n라이 위스키는 곡물 중 라이를 사용하여 만들어지며, 특유의 향과 맛이 있습니다. 미국 라이 위스키와 캐나다 라이 위스키가 있습니다.")
+            # user_type = ['블렌디드 몰트']
+        elif selected_type == '버번 & 라이 위스키': 
+            st.write("버번 위스키는 옥수수로 만들어지며, 단맛과 부드러움이 특징입니다. 켄터키 버번은 가장 유명한 스타일 중 하나입니다.\n라이 위스키는 곡물 중 라이를 사용하여 만들어지며, 특유의 향과 맛이 있습니다. 미국 라이 위스키와 캐나다 라이 위스키가 있습니다.")
+            # user_type = ['버번/라이']
+    
+    # 사용자로부터 최소가격과 최대가격을 입력 받음
+    min_price = st.text_input("최소 가격 입력 (최대 8자)", max_chars=8)
+    max_price = st.text_input("최대 가격 입력 (최대 8자)", max_chars=8)
 
-    aroma = ['Woody', 'Feinty', 'Winey', 'Peaty', 'Cereal', 'Floral', 'Fruity', 'Sulphur']
-    selected_aroma = st.multiselect("aroma를 선택", aroma)
+    # 입력값이 비어있지 않은 경우에만 처리
+    if min_price and max_price:
+        min_price = int(min_price)
+        max_price = int(max_price)
+    # 입력된 최소가격과 최대가격으로 필요한 처리 수행
+        st.write(f"가격 범위는 {int(min_price)}원부터 {int(max_price)}까지 입니다")
 
-    taste = ['Woody', 'Feinty', 'Winey', 'Peaty', 'Cereal', 'Floral', 'Fruity', 'Sulphur']
-    selected_taste = st.multiselect("tastef를 선택", taste)
+    # 'aroma를 선택' 제목 추가
+    st.write("aroma를 선택:")
 
-    finish = ['Woody', 'Feinty', 'Winey', 'Peaty', 'Cereal', 'Floral', 'Fruity', 'Sulphur']
-    selected_finish = st.multiselect("finish를 선택", finish)
+    # 체크 박스를 가로로 8개 나열
+    col1_aroma, col2_aroma, col3_aroma, col4_aroma = st.columns(4)
+    user_cats_list = []
+    # 각 열(column)에 4개씩 체크 박스 추가
+    with col1_aroma:
+        option1_aroma = st.checkbox('나무향', key="aroma_option1")
+        if option1_aroma:
+            user_cats_list.append('aroma_나무향')
+        option2_aroma = st.checkbox('잔류액향', key="aroma_option2")
+        if option2_aroma:
+            user_cats_list.append('aroma_잔류액향')
+            
+    with col2_aroma:
+        option3_aroma = st.checkbox('와인향', key="aroma_option3")
+        if option3_aroma:
+            user_cats_list.append('aroma_와인향')
+        option4_aroma = st.checkbox('피트향', key="aroma_option4")
+        if option4_aroma:
+            user_cats_list.append('aroma_피트향')       
 
-    price = st.select_slider("whiskey price 선택(단위:원)", options=range(0, 30000001, 10000))
+    with col3_aroma:
+        option5_aroma = st.checkbox('곡물향', key="aroma_option5")
+        if option5_aroma:
+            user_cats_list.append('aroma_곡물향')  
+        option6_aroma = st.checkbox('꽃향기', key="aroma_option6")
+        if option6_aroma:
+            user_cats_list.append('aroma_꽃향기')  
 
-    if price > 0:
-        st.write(f"0~{price}원까지 가격대 위스키를 찾으시나요?")
+    with col4_aroma:
+        option7_aroma = st.checkbox('과일향', key="aroma_option7")
+        if option7_aroma:
+            user_cats_list.append('aroma_과일향')  
+        option8_aroma = st.checkbox('유황', key="aroma_option8")
+        if option8_aroma:
+            user_cats_list.append('aroma_유황')  
+
+    # 'taste를 선택' 제목 추가
+    st.write("taste를 선택:")
+
+    # 체크 박스를 가로로 8개 나열
+    col1_taste, col2_taste, col3_taste, col4_taste = st.columns(4)
+
+    # 각 열(column)에 4개씩 체크 박스 추가
+    with col1_taste:
+        option1_taste = st.checkbox('나무향', key="taste_option1")
+        if option1_taste:
+            user_cats_list.append('taste_나무향')  
+        option2_taste = st.checkbox('잔류액향', key="taste_option2")
+        if option2_taste:
+            user_cats_list.append('taste_잔류액향')  
+
+    with col2_taste:
+        option3_taste = st.checkbox('와인향', key="taste_option3")
+        if option3_taste:
+            user_cats_list.append('taste_와인향')  
+        option4_taste = st.checkbox('피트향', key="taste_option4")
+        if option4_taste:
+            user_cats_list.append('taste_피트향')  
+
+    with col3_taste:
+        option5_taste = st.checkbox('곡물향', key="taste_option5")
+        if option5_taste:
+            user_cats_list.append('taste_곡물향')  
+        option6_taste = st.checkbox('꽃향기', key="taste_option6")
+        if option6_taste:
+            user_cats_list.append('taste_꽃향기')  
+
+    with col4_taste:
+        option7_taste = st.checkbox('과일향', key="taste_option7")
+        if option7_taste:
+            user_cats_list.append('taste_과일향')  
+        option8_taste = st.checkbox('유황', key="taste_option8")
+        if option8_taste:
+            user_cats_list.append('taste_유황')  
+
+    # 'finish를 선택' 제목 추가
+    st.write("finish를 선택:")
+
+    # 체크 박스를 가로로 8개 나열
+    col1_finish, col2_finish, col3_finish, col4_finish = st.columns(4)
+
+    # 각 열(column)에 4개씩 체크 박스 추가
+    with col1_finish:
+        option1_finish = st.checkbox('나무향', key="finish_option1")
+        if option1_finish:
+            user_cats_list.append('finish_유황')  
+        option2_finish = st.checkbox('잔류액향', key="finish_option2")
+        if option2_finish:
+            user_cats_list.append('finish_잔류액향')  
+
+    with col2_finish:
+        option3_finish = st.checkbox('와인향', key="finish_option3")
+        if option3_finish:
+            user_cats_list.append('finish_와인향')  
+        option4_finish = st.checkbox('피트향', key="finish_option4")
+        if option4_finish:
+            user_cats_list.append('finish_피트향')  
+
+    with col3_finish:
+        option5_finish = st.checkbox('곡물향', key="finish_option5")
+        if option5_finish:
+            user_cats_list.append('finish_곡물향')  
+        option6_finish = st.checkbox('꽃향기', key="finish_option6")
+        if option6_finish:
+            user_cats_list.append('finish_꽃향기')  
+
+    with col4_finish:
+        option7_finish = st.checkbox('과일향', key="finish_option7")
+        if option7_finish:
+            user_cats_list.append('finish_과일향')  
+        option8_finish = st.checkbox('유황', key="finish_option8")
+        if option8_finish:
+            user_cats_list.append('finish_유황')  
+
+
+    csv_file_path = r'./data/whisky_preprocessing.csv'
+
+    # 유사도를 위한 데이터 전처리
+    preprocessor = WhiskeySimilarityChecker(csv_file_path)
+    preprocessor.preprocessing()
+
+    user_name = 'User01' 
+    show_list = ['Whisky Name','price','type','capacity','alcohol','country']
+    
+    if (types[selected_type] is not None) & (type(min_price) == int) & (type(max_price) == int) & (len(user_cats_list) > 0):
+        Result = True
     else:
-        st.write("원하는 가격대를 설정해주세요")
+        Result = False
+
+    st.write(types[selected_type])
+    # "선택 완료" 버튼을 누르면 스피너가 나타나도록 설정
+    if st.button("선택 완료"):
+        with st.spinner("위스키 추천 중입니다..."):
+            # 시뮬레이션을 위한 대기 시간, 실제로는 데이터 처리 시간에 맞게 조절
+            time.sleep(3)  
+            
+        if Result == True:
+            st.success('위스키 찾기가 완료되었습니다', icon="✅")     
+            user_types = [types[selected_type]]
+            user_price = (min_price, max_price) # (min_price , max_price)
+            similar_shows = preprocessor.find_similar_shows(user_name, user_types, user_price, user_cats_list, top_n=5)
+            st.write(similar_shows[show_list])
+            
+        elif Result == False:
+            st.write('### :blue[값을 채워주세요!]')
 
 # "Whiskey Docent" 페이지
 if choose == "Whiskey Docent":
     st.title("위스키 도슨트 서비스")
     st.write("이 페이지는 위스키 도슨트 정보를 제공하는 페이지입니다.")
 
-    # ImageSearch initialization
-    driver_path = r"C:\Users\Playdata\Desktop\chromedriver.exe"
-    searcher = ImageSearch(driver_path)
-    if choose == "Whiskey Docent":
-        if not extracted_text:
-            user_prompt = st.text_input("Enter the whiskey's full name:")
-            if st.button("Generate") and user_prompt:
-                searcher = ImageSearch(driver_path)
-            saved_path = searcher.search_and_save_query(user_prompt)
-
-            if saved_path:
-                st.image(saved_path, caption=f"Image for {user_prompt}", use_column_width=True)
-            else:
-                st.write("Failed to fetch and save the image.")
-
-            whiskey_info = lcw.get_whiskey_info(user_prompt)
-            docent_description = lcw.get_docent_description(user_prompt)
-
-            st.write(f"Whiskey Info: {whiskey_info}")
-            st.write(f"Docent Description: {docent_description}")
-        else:
-            user_prompt = extracted_text
-
-
-        # Here, use the `extracted_text` as input
-        whiskey_info = lcw.get_whiskey_info(extracted_text)
-        docent_description = lcw.get_docent_description(extracted_text)
-
-        st.write(f"Whiskey Info: {whiskey_info}")
-        st.write(f"Docent Description: {docent_description}")
-
-        saved_path = searcher.search_and_save_query(extracted_text)
-
-        if saved_path:
-            st.image(saved_path, caption=f"Image for {extracted_text}", use_column_width=True)
-        else:
-            st.write("Failed to fetch and save the image.")
-
-        whiskey_info = lcw.get_whiskey_info(extracted_text)
-        docent_description = lcw.get_docent_description(extracted_text)
-
-        st.write(f"Whiskey Info: {extracted_text}")
-        st.write(f"Docent Description: {extracted_text}")
-
-
-
-
-
 # "Take a Photo" 페이지
 if choose == "Take a Photo":
     st.title("Webcam Photo Capture in Streamlit")
-    st.subheader("사진을 찍어보세요")
 
     # User input for folder path
     folder_path = "./capturedimage"
 
     # HTML to create a video element and capture button
-    html_code = webcam_capture.html_code
+    html_code = """
+        <div style="display: flex; justify-content: center;">
+            <video id="webcam" width="640" height="480" autoplay></video>
+            <button id="capture" style="margin-top: 10px;">Capture</button>
+        </div>
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <script>
+            const webcamElement = document.getElementById('webcam');
+            const canvasElement = document.getElementById('canvas');
+            const captureButton = document.getElementById('capture');
+
+            navigator.mediaDevices.getUserMedia({ 'video': true })
+            .then(stream => {
+                webcamElement.srcObject = stream;
+            });
+
+            captureButton.addEventListener('click', () => {
+                canvasElement.width = webcamElement.videoWidth;
+                canvasElement.height = webcamElement.videoHeight;
+                const context = canvasElement.getContext('2d');
+                context.drawImage(webcamElement, 0, 0);
+                let photo = canvasElement.toDataURL('image/jpeg');
+                document.getElementById('photo').value = photo;
+            });
+        </script>
+    """
 
     # Embed the HTML in the Streamlit app
     st.markdown(html_code, unsafe_allow_html=True)
 
     # Capture the photo data
-    photo_data = st.text_area(label="캡처된 사진 (base64)", height=200, key="photo")
-    uploaded_image = st.file_uploader("이미지 업로드", type=['jpg', 'jpeg', 'png'])
-
-    # Create an instance of the TextRecognition class
-    text_recognizer = TextRecognition()
-
-    # Initialize extracted_text
-    extracted_text = ""
-
-    if uploaded_image is not None:
-        image = Image.open(uploaded_image)
-        st.image(image, caption='업로드된 이미지', use_column_width=True)
-
-        st.write("")
-        st.write("처리된 이미지")
-
-        opencv_image = np.array(image)
-
-        st.image(edges, channels="GRAY", use_column_width=True)
+    photo_data = st.text_area(label="Captured Photo (base64)", height=200, key="photo")
 
     if photo_data and folder_path:
         header, encoded = photo_data.split(",", 1)
         photo_bytes = base64.b64decode(encoded)
 
-        # 지정된 폴더에 사진 저장
+        # Save the photo to the specified folder
         file_path = os.path.join(folder_path, "captured_photo.jpg")
         with open(file_path, "wb") as f:
             f.write(photo_bytes)
 
-        st.success(f"사진이 저장되었습니다: {file_path}")
-
-        # Perform OCR on the captured image using the TextRecognition class
-        extracted_text = text_recognizer.read_and_generate_text(file_path)
+        st.success(f"Photo saved to: {file_path}")
 
     st.subheader("")
