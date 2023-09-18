@@ -32,41 +32,41 @@ with st.sidebar:
                          })
 # "Welcome" 페이지
 if choose == "Contents":
+
     # 제목
-    st.title("나만의 위스키")
-
-    # 진한 가로선 추가
-    # st.markdown('<hr style="border-top: 3px solid #000;">', unsafe_allow_html=True)
-
+    image = Image.open("./image/main_img_1.jpg")
+    st.image(image)
+    
+    
     # 이미지를 불러옵니다.
-    image = Image.open("contents1.png")
+    image2 = Image.open("./image/main_img_2.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
-    st.image(image)
+    st.image(image2)
 
     # 두 번째 이미지를 불러옵니다.
-    image2 = Image.open("contents2.png")
+    image3 = Image.open("./image/main_img_3.jpg")
 
     # 두 번째 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
-    st.image(image2)
+    st.image(image3)
 
     # 간격 조정
     st.subheader("")
 
     # 세 번째 이미지를 불러옵니다.
-    image3 = Image.open("contents3.png")
+    image4 = Image.open("./image/main_img_4.jpg")
 
     # 세 번째 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
-    st.image(image3)
+    st.image(image4)
 
 # "Whiskey Recommend" 페이지
 if choose == "Recommendation":
   
     # 이미지를 불러옵니다.
-    image4 = Image.open("recommend1.png")
+    image5 = Image.open("./image/main_img_5.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
-    st.image(image4)
+    st.image(image5)
 
      # 간격 조정
     st.subheader("")
@@ -98,16 +98,21 @@ if choose == "Recommendation":
     st.subheader("")
 
     # 이미지를 불러옵니다.
-    image5 = Image.open("recommend2.png")
+    image6 = Image.open("./image/main_img_6.jpg")
 
     # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
-    st.image(image5)
+    st.image(image6)
+    
+    image7 = Image.open("./image/main_img_7.jpg")
+
+    # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
+    st.image(image7)
 
      # 간격 조정
     st.subheader("")
     
     # 'aroma를 선택' 제목 추가
-    st.write("**향 선택**")
+    st.write("**향 선택 (1 ~ 3 개)**")
 
     # 체크 박스를 가로로 8개 나열
     col1_aroma, col2_aroma, col3_aroma, col4_aroma = st.columns(4)
@@ -146,7 +151,7 @@ if choose == "Recommendation":
             user_cats_list.append('aroma_유황')  
 
     # 'taste를 선택' 제목 추가
-    st.write("**맛 선택**")
+    st.write("**맛 선택 (1 ~ 3 개)**")
 
     # 체크 박스를 가로로 8개 나열
     col1_taste, col2_taste, col3_taste, col4_taste = st.columns(4)
@@ -185,7 +190,7 @@ if choose == "Recommendation":
             user_cats_list.append('taste_유황')  
 
     # 'finish를 선택' 제목 추가
-    st.write("**여운 선택**")
+    st.write("**여운 선택 (1 ~ 3 개)**")
 
     # 체크 박스를 가로로 8개 나열
     col1_finish, col2_finish, col3_finish, col4_finish = st.columns(4)
@@ -254,10 +259,12 @@ if choose == "Recommendation":
             similar_shows.rename(columns = {'nameKor': '위스키 이름','type':'타입',
                                 'price':'가격','capacity':'용량', 'country':'국가','alcohol':'도수'},inplace = True)
             
-            st.dataframe(similar_shows[show_list], hide_index=True)
+            st.write(similar_shows[show_list])
             
         elif Result == False:
             st.write('### :blue[값을 채워주세요!]')
+
+
 
 if choose == "Docent":
     api_key_junseongs = "please put the api key"
