@@ -5,16 +5,16 @@ import numpy as np
 import pandas as pd
 
 # 추천시스템 유사도
-from similarity import *
+from Recommend.similarity import *
 
 
 import streamlit.components.v1 as html
 import io, os, time, base64, cv2
 
 # 도슨트
-from whiskylogoprocess import WhiskeyLogoProcessor
-from image_search import ImageSearch
-from whiskeylangchain import LangChainWhiskey
+from OCR.whiskylogoprocess import WhiskeyLogoProcessor
+from OCR.image_search import ImageSearch
+from llm.whiskeylangchain import LangChainWhiskey
 
 
 
