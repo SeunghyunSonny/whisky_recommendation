@@ -1,5 +1,4 @@
 import streamlit as st
-
 from streamlit_option_menu import option_menu
 from PIL import Image
 
@@ -12,6 +11,12 @@ import numpy as np
 import pandas as pd
 import streamlit.components.v1 as html
 import io, os, time, base64
+
+from webcamera import WebcamCaptureHTML
+from whiskeyocr_forread import TextRecognition
+from image_search import ImageSearch
+from whiskeylangchain import LangChainWhiskey
+from embeddin import DocEmbedding
 
 
 api_key_junseongs = "please put the api key"
@@ -269,62 +274,50 @@ if choose == "Whiskey Recommend":
         elif Result == False:
             st.write('### :blue[값을 채워주세요!]')
 
-# "Whiskey Docent" 페이지
 if choose == "Whiskey Docent":
     st.title("위스키 도슨트 서비스")
     st.write("이 페이지는 위스키 도슨트 정보를 제공하는 페이지입니다.")
 
-# "Take a Photo" 페이지
-if choose == "Take a Photo":
-    st.title("Webcam Photo Capture in Streamlit")
+    # ImageSearch initialization
+    driver_path = r"./chromedriver.exe"
+    searcher = ImageSearch(driver_path)
+    if choose == "Whiskey Docent":
+        if not extracted_text:
+            user_prompt = st.text_input("Enter the whiskey's full name:")
+            if st.button("Generate") and user_prompt:
+                searcher = ImageSearch(driver_path)
+            saved_path = searcher.search_and_save_query(user_prompt)
 
-    # User input for folder path
-    folder_path = "./capturedimage"
+            if saved_path:
+                st.image(saved_path, caption=f"Image for {user_prompt}", use_column_width=True)
+            else:
+                st.write("Failed to fetch and save the image.")
 
-    # HTML to create a video element and capture button
-    html_code = """
-        <div style="display: flex; justify-content: center;">
-            <video id="webcam" width="640" height="480" autoplay></video>
-            <button id="capture" style="margin-top: 10px;">Capture</button>
-        </div>
-        <canvas id="canvas" style="display:none;"></canvas>
+            whiskey_info = lcw.get_whiskey_info(user_prompt)
+            docent_description = lcw.get_docent_description(user_prompt)
 
-        <script>
-            const webcamElement = document.getElementById('webcam');
-            const canvasElement = document.getElementById('canvas');
-            const captureButton = document.getElementById('capture');
+            st.write(f"Whiskey Info: {whiskey_info}")
+            st.write(f"Docent Description: {docent_description}")
+        else:
+            user_prompt = extracted_text
 
-            navigator.mediaDevices.getUserMedia({ 'video': true })
-            .then(stream => {
-                webcamElement.srcObject = stream;
-            });
 
-            captureButton.addEventListener('click', () => {
-                canvasElement.width = webcamElement.videoWidth;
-                canvasElement.height = webcamElement.videoHeight;
-                const context = canvasElement.getContext('2d');
-                context.drawImage(webcamElement, 0, 0);
-                let photo = canvasElement.toDataURL('image/jpeg');
-                document.getElementById('photo').value = photo;
-            });
-        </script>
-    """
+        # Here, use the `extracted_text` as input
+        whiskey_info = lcw.get_whiskey_info(extracted_text)
+        docent_description = lcw.get_docent_description(extracted_text)
 
-    # Embed the HTML in the Streamlit app
-    st.markdown(html_code, unsafe_allow_html=True)
+        st.write(f"Whiskey Info: {whiskey_info}")
+        st.write(f"Docent Description: {docent_description}")
 
-    # Capture the photo data
-    photo_data = st.text_area(label="Captured Photo (base64)", height=200, key="photo")
+        saved_path = searcher.search_and_save_query(extracted_text)
 
-    if photo_data and folder_path:
-        header, encoded = photo_data.split(",", 1)
-        photo_bytes = base64.b64decode(encoded)
+        if saved_path:
+            st.image(saved_path, caption=f"Image for {extracted_text}", use_column_width=True)
+        else:
+            st.write("Failed to fetch and save the image.")
 
-        # Save the photo to the specified folder
-        file_path = os.path.join(folder_path, "captured_photo.jpg")
-        with open(file_path, "wb") as f:
-            f.write(photo_bytes)
+        whiskey_info = lcw.get_whiskey_info(extracted_text)
+        docent_description = lcw.get_docent_description(extracted_text)
 
-        st.success(f"Photo saved to: {file_path}")
-
-    st.subheader("")
+        st.write(f"Whiskey Info: {extracted_text}")
+        st.write(f"Docent Description: {extracted_text}")
