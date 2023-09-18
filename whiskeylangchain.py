@@ -7,7 +7,7 @@ import pandas as pd
 
 
 class LangChainWhiskey:
-    def __init__(self, api_key, directory="./docent"):
+    def __init__(self, api_key, directory="./data/docent"):
         self.llm = OpenAI(openai_api_key=api_key)  # OpenAI 객체 초기화
         self.doc_embed = DocEmbedding(directory=directory)  # DocEmbedding 객체 초기화
         self.df = self.whiskeydataframe()  # 데이터프레임 로드
