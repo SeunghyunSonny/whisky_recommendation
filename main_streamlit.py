@@ -19,8 +19,6 @@ from whiskeylangchain import LangChainWhiskey
 from embeddin import DocEmbedding
 
 
-api_key_junseongs = "please put the api key"
-lcw = LangChainWhiskey(api_key_junseongs)
 
 # 페이지 선택을 위한 버튼을 사이드바에 추가합니다.
 with st.sidebar:
@@ -275,6 +273,8 @@ if choose == "Whiskey Recommend":
             st.write('### :blue[값을 채워주세요!]')
 
 if choose == "Whiskey Docent":
+    api_key_junseongs = "please put the api key"
+    lcw = LangChainWhiskey(api_key_junseongs)
     st.title("위스키 도슨트 서비스")
     st.write("이 페이지는 위스키 도슨트 정보를 제공하는 페이지입니다.")
 
