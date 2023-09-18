@@ -267,8 +267,57 @@ if choose == "Recommendation":
 
 
 if choose == "Docent":
-    api_key_junseongs = "please put the api key"
+    api_key_junseongs = "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"
     lcw = LangChainWhiskey(api_key_junseongs)
+    
+    # 이미지를 불러옵니다.
+    image7 = Image.open("./image/사진업로드 로고타입.jpg")
+    # 이미지를 좌우로 정렬하여 페이지의 너비에 맞게 표시합니다.
+    st.image(image7)
+    # 간격 조정
+    st.subheader("")
+    logo_type = {"로고 타입을 선택해 주세요.",
+            "한 줄짜리 로고사진",
+            "두 줄짜리 로고사진"}
+    selected_logo_type = st.selectbox("**로고 타입 선택**", logo_type)
+    # 간격 조정
+    st.subheader("")
+    # 파일 업로드를 위한 컴포넌트
+    uploaded_file = st.file_uploader("로고 이미지 파일 업로드", type=["jpg", "png", "jpeg"])
+    # 업로드한 파일이 있다면 이미지로 표시
+    if uploaded_file is not None:
+        st.image(uploaded_file, caption="업로드한 이미지", use_column_width=True)
+        
+    # 간격 조정
+    st.subheader("")
+    extracted_text = result_list(str_text, length = 5)
+    st.selectbox("위스키를 선택해주세요:", "extracted_text")
+
+    # ImageSearch 객체 초기화
+    driver_path = r"C:\Users\Playdata\Desktop\chromedriver.exe"
+    searcher = ImageSearch(driver_path)
+
+    user_prompt = st.text_input("Enter the whiskey's full name:")
+
+    if st.button("Generate") and user_prompt:
+        saved_path = searcher.search_and_save_query(user_prompt)
+
+        if saved_path:
+            st.image(saved_path, caption=f"Image for {user_prompt}", use_column_width=True)
+        else:
+            st.write("Failed to fetch and save the image.")
+
+        whiskey_info = lcw.get_whiskey_info(user_prompt)
+        docent_description = lcw.get_docent_description(user_prompt)
+
+        st.write(f"Whiskey Info: {whiskey_info}")
+        st.write(f"Docent Description: {docent_description}")
+
+
+
+    
+    
+
     
     st.title("위스키 도슨트 서비스")
     st.write("이 페이지는 위스키 도슨트 정보를 제공하는 페이지입니다.")
@@ -276,43 +325,27 @@ if choose == "Docent":
     # ImageSearch initialization
     driver_path = r"./chromedriver.exe"
     searcher = ImageSearch(driver_path)
-    if choose == "Whiskey Docent":
-        if not extracted_text:
-            user_prompt = st.text_input("Enter the whiskey's full name:")
-            if st.button("Generate") and user_prompt:
-                searcher = ImageSearch(driver_path)
-            saved_path = searcher.search_and_save_query(user_prompt)
 
-            if saved_path:
-                st.image(saved_path, caption=f"Image for {user_prompt}", use_column_width=True)
-            else:
-                st.write("Failed to fetch and save the image.")
-
-            whiskey_info = lcw.get_whiskey_info(user_prompt)
-            docent_description = lcw.get_docent_description(user_prompt)
-
-            st.write(f"Whiskey Info: {whiskey_info}")
-            st.write(f"Docent Description: {docent_description}")
-        else:
-            user_prompt = extracted_text
+    
+    user_prompt = extracted_text
 
 
-        # Here, use the `extracted_text` as input
-        whiskey_info = lcw.get_whiskey_info(extracted_text)
-        docent_description = lcw.get_docent_description(extracted_text)
+    # Here, use the `extracted_text` as input
+    whiskey_info = lcw.get_whiskey_info(extracted_text)
+    docent_description = lcw.get_docent_description(extracted_text)
 
-        st.write(f"Whiskey Info: {whiskey_info}")
-        st.write(f"Docent Description: {docent_description}")
+    st.write(f"Whiskey Info: {whiskey_info}")
+    st.write(f"Docent Description: {docent_description}")
 
-        saved_path = searcher.search_and_save_query(extracted_text)
+    saved_path = searcher.search_and_save_query(extracted_text)
 
-        if saved_path:
-            st.image(saved_path, caption=f"Image for {extracted_text}", use_column_width=True)
-        else:
-            st.write("Failed to fetch and save the image.")
+    if saved_path:
+        st.image(saved_path, caption=f"Image for {extracted_text}", use_column_width=True)
+    else:
+        st.write("Failed to fetch and save the image.")
 
-        whiskey_info = lcw.get_whiskey_info(extracted_text)
-        docent_description = lcw.get_docent_description(extracted_text)
+    whiskey_info = lcw.get_whiskey_info(extracted_text)
+    docent_description = lcw.get_docent_description(extracted_text)
 
-        st.write(f"Whiskey Info: {extracted_text}")
-        st.write(f"Docent Description: {extracted_text}")
+    st.write(f"Whiskey Info: {extracted_text}")
+    st.write(f"Docent Description: {extracted_text}")
