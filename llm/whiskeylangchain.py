@@ -7,6 +7,7 @@ from langchain.chains import SequentialChain
 class LangChainWhiskey:
     def __init__(self, api_key):
         self.llm = OpenAI(openai_api_key=api_key)
+        self.llm.max_tokens = 2000
 
     def get_info_and_description(self, whisky):
         # 위스키 정보에 대한 템플릿
@@ -28,6 +29,7 @@ class LangChainWhiskey:
         whiskey: {whiskey_info}
         Docent for the above whiskey:
         """
+        print("dt", docent_text)
 
         # 위 샘플 텍스트를 템플릿으로
         DOCENT_template = PromptTemplate(
@@ -36,13 +38,18 @@ class LangChainWhiskey:
             validate_template=False
         )
 
+        print(str(DOCENT_template))
+
         # 도슨트에 대한 체인
         DOCENT_chain = LLMChain(
             llm=self.llm,
             prompt=DOCENT_template,
             output_key="docent_description",
             verbose=True
+            
         )
+
+        print("chain:", str(DOCENT_chain))
 
         # 위스키 체인과 도슨트 체인을 연결 및 아웃풋 설정
         overall_chain = SequentialChain(
