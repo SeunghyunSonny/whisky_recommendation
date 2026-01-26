@@ -11,3 +11,5 @@ base64
 io
 time
 fuzzywuzzy
+torch>=2.10.0 # not directly required, pinned by Snyk to avoid a vulnerability
+wheel>=0.46.2 # not directly required, pinned by Snyk to avoid a vulnerability
